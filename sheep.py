@@ -1,25 +1,36 @@
 import random
 from animal import Animal
+import util
 
 class SheepConfig:
-    max_health = 20     # default 20
+    max_health = 100     # default 20
     graze_amount = 2    # default 2
-    reproduction_health = 15
-    reset_health = 10     # default 10
+    reproduction_health = 40
+    reset_health = 20     # default 10
     initial_health = 10
+    move_distance = 1
+    
+    def __init__(self, max_health = max_health, 
+                 reset_health = reset_health, 
+                 initial_health = initial_health, 
+                 graze_amount = graze_amount, 
+                 reproduction_health = reproduction_health, 
+                 move_distance = move_distance):
+        self.max_health = max_health
+        self.reset_health = reset_health
+        self.initial_health = initial_health
+        self.graze_amount = graze_amount
+        self.reproduction_health = reproduction_health
+        self.max_health = move_distance
+        
 
 class Sheep(Animal):
     def __init__(self, x, y, min_x, min_y, max_x, max_y, grass_field, sheep_config):
-        self.x = x
-        self.y = y
-        self.min_x = min_x
-        self.min_y = min_y
-        self.max_x = max_x
-        self.max_y = max_y
+        super().__init__(x=x, y=y, min_x = min_x, min_y = min_y, max_x = max_x, max_y = max_y)
         self.health = sheep_config.initial_health
+        self.move_distance = sheep_config.move_distance
         self.grass_field = grass_field
         self.config = sheep_config
-        self.state = Animal.STATE_ALIVE
     
     def graze(self):
         grazed_amount = min(self.grass_field.grass_amount[self.x,self.y], self.config.graze_amount)
@@ -31,40 +42,15 @@ class Sheep(Animal):
         max = self.grass_field.grass_amount[self.x,self.y]
         dir_x = 0
         dir_y = 0
-        if self.y+1 < self.max_y and self.grass_field.grass_amount[self.x, self.y+1] > max:
-            dir_x = 0
-            dir_y = 1
-            max = self.grass_field.grass_amount[self.x + dir_x, self.y + dir_y]
-        if self.y+1 < self.max_y and self.x+1 < self.max_x and self.grass_field.grass_amount[self.x+1, self.y+1] > max:
-            dir_x = 1
-            dir_y = 1
-            max = self.grass_field.grass_amount[self.x + dir_x, self.y + dir_y]
-        if self.x+1 < self.max_x and self.grass_field.grass_amount[self.x+1, self.y] > max:
-            dir_x = 1
-            dir_y = 0
-            max = self.grass_field.grass_amount[self.x + dir_x, self.y + dir_y]
-        if self.y-1 > self.min_y and self.x+1 < self.max_x and self.grass_field.grass_amount[self.x+1, self.y-1] > max:
-            dir_x = 1
-            dir_y = -1
-            max = self.grass_field.grass_amount[self.x + dir_x, self.y + dir_y]
-        if self.y-1 > self.min_y and self.grass_field.grass_amount[self.x, self.y-1] >0 :
-            dir_x = 0
-            dir_y = -1
-            max = self.grass_field.grass_amount[self.x + dir_x, self.y + dir_y]
-        if self.y-1 > self.min_y and self.x-1 < self.min_x and self.grass_field.grass_amount[self.x-1, self.y-1] > max:
-            dir_x = -1
-            dir_y = -1
-            max = self.grass_field.grass_amount[self.x + dir_x, self.y + dir_y]
-        if self.x-1 > self.min_x and self.grass_field.grass_amount[self.x-1, self.y] >0 :
-            dir_x = -1
-            dir_y = 0
-            max = self.grass_field.grass_amount[self.x + dir_x, self.y + dir_y]
-        if self.y+1 < self.max_y and self.x-1 < self.min_x and self.grass_field.grass_amount[self.x-1, self.y+1] > max:
-            dir_x = -1
-            dir_y = 1
+        for x in range(-1,1):
+            for y in range(-1,1):
+                if self.x + x >= self.min_x and self.x + x <= self.max_x and self.y + y >= self.min_y and self.y + y <= self.max_y:
+                    if self.grass_field.grass_amount[self.x + dir_x, self.y + dir_y] > max:
+                        dir_x = x
+                        dir_y = y
+                        max = self.grass_field.grass_amount[self.x + dir_x, self.y + dir_y]
         if max == 0:
             return False, 0, 0
-
         return True, dir_x, dir_y
     
     def roam(self):
@@ -78,33 +64,9 @@ class Sheep(Animal):
     def text_symbol(self):
         return "🐑"
 
-    def random_move(self):
-        moved = False
-        move_tries = 0
-        while not moved and move_tries < 5:
-            move_tries = move_tries + 1
-            dir = random.randint(1,4)
-            if dir == 1:
-                if self.x > self.min_x + 1:
-                    self.x = self.x - 1
-                    moved = True
-            elif dir == 2:
-                if self.x < self.max_x - 1:
-                    self.x = self.x + 1
-                    moved = True
-            elif dir == 3:
-                if self.y > self.min_y + 1:
-                    self.y = self.y - 1
-                    moved = True
-            elif dir == 4:
-                if self.y < self.max_y - 1:
-                    self.y = self.y + 1
-                    moved = True
-            else:
-                print("uh oh, bad direction")
+    def get_move_distance(self):
+        return self.move_distance
 
-    def die(self):
-        self.state = Animal.STATE_DEAD
     
     def do_turn(self):
         self.health = self.health - 1
