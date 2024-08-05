@@ -5,20 +5,8 @@ from sheep import Sheep, SheepConfig
 from wolf import Wolf, WolfConfig
 import util
 
-## wolf 🐕
-# rock 🪨
-
 iteration_first_sheep = 40
 iteration_first_wolf = 100
-
-SYMBOL_GRASS_0 = "  "
-SYMBOL_GRASS_1 = " 🌱"
-SYMBOL_GRASS_2 = " 🌿"
-SYMBOL_GRASS_3 = "🌿🌿"
-SYMBOL_GRASS_4 = "🌾🌾"
-SYMBOL_SHEEP = "🐑"
-SYMBOL_WOLF_1 = "🐺"
-SYMBOL_WOLF_2 = "🐕"
 
 sheep_config = SheepConfig(
     max_health = 100,
@@ -33,7 +21,7 @@ wolf_config = WolfConfig(
     max_health = 50,    
     reproduction_health = 50,
     reset_health = 10, 
-    initial_health = 10,
+    initial_health = 20,
     move_distance = 1,
     sheep_health_bonus = 10
 )
@@ -53,6 +41,16 @@ initial_x = 10
 initial_y = 10
 
 sleep_amount = 0.07   # default 0.1
+
+SYMBOL_GRASS_0 = "  "
+SYMBOL_GRASS_1 = " 🌱"
+SYMBOL_GRASS_2 = " 🌿"
+SYMBOL_GRASS_3 = "🌿🌿"
+SYMBOL_GRASS_4 = "🌾🌾"
+SYMBOL_SHEEP = "🐑"
+SYMBOL_WOLF_1 = "🐺"
+SYMBOL_WOLF_2 = "🐕"
+
 
 class SheepGame:
     def __init__(self, width, height, grass_field_config, sheep_config, wolf_config):
@@ -102,7 +100,7 @@ class SheepGame:
             for y in range(self.height):
                 symbol=self.text_symbol_grass(x,y)
                 if self.wolf_at(x,y):
-                    symbol = symbol[0] + SYMBOL_WOLF_2
+                    symbol = symbol[0] + SYMBOL_WOLF_1
                 elif self.sheep_at(x,y):
                     symbol= symbol[0] + SYMBOL_SHEEP
                 print("{}".format(symbol), end="")
@@ -168,6 +166,9 @@ class SheepGame:
     def check_end(self):
         if self.iterations > iteration_first_sheep:
             if len(self.sheep) == 0:
+                return False
+        if self.iterations > iteration_first_wolf:
+            if len(self.wolves) == 0:
                 return False
         return True
             
