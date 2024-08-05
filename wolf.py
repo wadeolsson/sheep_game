@@ -1,14 +1,14 @@
 from animal import Animal
 
 class WolfConfig:
-    max_health = 100    
+    default_max_health = 100    
     reproduction_health = 50
     reset_health = 20    
     initial_health = 10
     move_distance = 1
     sheep_health_bonus = 10
 
-    def __init__(self, max_health = max_health, 
+    def __init__(self, max_health = default_max_health, 
                  reset_health = reset_health, 
                  initial_health = initial_health, 
                  sheep_health_bonus = sheep_health_bonus, 
@@ -31,14 +31,16 @@ class Wolf(Animal):
         self.move_distance = wolf_config.move_distance
 
     def do_turn(self):
+        self.age()
+        if self.is_alive():
+            self.feed()
+            self.move()
+            self.reproduce()
+
+    def age(self):
         self.health = self.health - 1
-        self.feed()
-        self.roam()
         if self.health <= 0:
             self.die()
-        if self.health > self.config.reproduction_health:
-            self.offspring = self.offspring + 1
-            self.health = self.config.reset_health
 
     def feed(self):
         for i in range(len(self.sheep)):
@@ -52,11 +54,16 @@ class Wolf(Animal):
                 return True, self.sheep[i].x, self.sheep[i].y
         return False, 0, 0
 
-    def roam(self):
+    def move(self):
         found_food, new_x, new_y = self.choose_max_food_direction()
         if found_food:
             self.x = new_x
             self.y = new_y
         else:
             self.random_move()
+
+    def reproduce(self):
+        if self.health > self.config.reproduction_health:
+            self.offspring = self.offspring + 1
+            self.health = self.config.reset_health
 
